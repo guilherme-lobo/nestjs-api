@@ -7,12 +7,11 @@ import  * as config  from '../config.json';
 @Injectable()
 export class AppService {
   getHello(): string {
-    console.log(config);
+   
     return 'Hello World!';
   }
 
   getNamesByRoom(): object{
-    console.log(config);
     return config.pessoas ;
     }
 
