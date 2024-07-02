@@ -1,13 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Req} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Req } from '@nestjs/common';
 import { Room } from './room.interface';
 import { RoomService } from './room.service';
 
 @Controller('room')
 export class RoomController {
-  constructor(private readonly roomService: RoomService) {}
+  constructor(private readonly roomService: RoomService) { }
 
   @Post('/new')
-  create(@Req() req,@Res() res) {
+  create(@Req() req, @Res() res) {
     return res.redirect(this.roomService.create(req.body));
   }
 
@@ -31,9 +31,9 @@ export class RoomController {
     return this.roomService.remove(+id);
   }
 
-  @Post('/join')
-  joinRoom(@Req() req){
-    console.log(req)
-    return this.roomService.joinRoom(req.body.usuario, req.body.room)
+  @Get(':user/join/:room')
+  joinRoom(@Param('user') idUser: string, @Param('room') idRoom: string) {
+    console.log(idUser,idRoom)
+    return this.roomService.joinRoom(idUser, idRoom)
   }
 }

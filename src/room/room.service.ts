@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Schema, model, connect, Mongoose } from 'mongoose';
 import { RoomModel, Room } from './room.interface';
-import { Usuarios } from './usuarios.interface';
+import { Usuarios, UsuariosModel } from './usuarios.interface';
 
 @Injectable()
 export class RoomService {
@@ -17,9 +17,9 @@ export class RoomService {
     }
     RoomModel.create({
       name: result,
-      open:true,
+      open: true,
       usuarios: [user]
-    }).then((res)=>console.log(res))
+    }).then((res) => console.log(res))
     return "/room/" + result;
 
   }
@@ -42,46 +42,42 @@ export class RoomService {
     return `This action removes a #${id} room`;
   }
 
-  joinRoom(user: Usuarios, room: Room) {
-    console.log(user)
-    console.log(room)
-   let res = RoomModel.updateOne(room,{$addToSet:{usuarios:user}}).exec()
-    .then((res)=>{
-      console.log(res)
-      if(res.modifiedCount>0)
-        return true
-      return false
-    })
+  async joinRoom(idUser: string, name: string) {
+    let user: any = await UsuariosModel.find({ name: idUser })
+
+    if (!user)
+      user = await UsuariosModel.create({ name: idUser })
+
+    let res = await RoomModel.findOneAndUpdate({ name: name }, { $addToSet: { usuarios: user } }).exec()
+    return res
+  }
+
+  leaveRoom(user: Usuarios, room: Room) {
+    let res = RoomModel.updateOne(room, { $unset: { usuarios: user } }).exec()
+      .then((res) => {
+        if (res.modifiedCount > 0)
+          return true
+        return false
+      })
 
     return res
   }
 
-  leaveRoom(user: Usuarios, room: Room){
-    let res = RoomModel.updateOne(room,{$unset:{usuarios:user}}).exec()
-    .then((res)=>{
-      if(res.modifiedCount>0)
-        return true
-      return false
-    })
-
-    return res
-  }
-  
-  playCard(user: Usuarios, room: Room){
+  playCard(user: Usuarios, room: Room) {
     const query = {
-      name:room.name,
-      "usuarios.name":user.name
+      name: room.name,
+      "usuarios.name": user.name
     }
     const updateDoc = {
-      $set: {'usuarios.$.card': user.card}
+      $set: { 'usuarios.$.card': user.card }
     }
-    let res = RoomModel.updateOne(query,updateDoc).exec()
-    .then((res)=>{
-      console.log(res)
-      if(res.modifiedCount>0)
-        return true
-      return false
-    })
+    let res = RoomModel.updateOne(query, updateDoc).exec()
+      .then((res) => {
+        console.log(res)
+        if (res.modifiedCount > 0)
+          return true
+        return false
+      })
 
     return res
   }

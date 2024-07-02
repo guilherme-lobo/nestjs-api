@@ -2,7 +2,7 @@ import { MessageBody, SubscribeMessage, WebSocketGateway } from '@nestjs/websock
 import { Server } from 'socket.io'
 import { RoomService } from '../room/room.service';
 
-@WebSocketGateway()
+@WebSocketGateway(8988,{namespace:'events'})
 export class SocketGateway {
   public server: Server
 
