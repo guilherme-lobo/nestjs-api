@@ -8,7 +8,7 @@ export class RoomController {
 
   @Post('/new')
   create(@Req() req, @Res() res) {
-    return res.redirect(this.roomService.create(req.body));
+    return this.roomService.create(req.body);
   }
 
   @Get()
@@ -18,22 +18,17 @@ export class RoomController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.roomService.findOne(+id);
+    return this.roomService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateRoomDto: Room) {
+    console.log("opa")
     return this.roomService.update(+id, updateRoomDto);
   }
 
-  @Delete(':id')
+  @Delete(':id')  
   remove(@Param('id') id: string) {
     return this.roomService.remove(+id);
-  }
-
-  @Get(':user/join/:room')
-  joinRoom(@Param('user') idUser: string, @Param('room') idRoom: string) {
-    console.log(idUser,idRoom)
-    return this.roomService.joinRoom(idUser, idRoom)
   }
 }

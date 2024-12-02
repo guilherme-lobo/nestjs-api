@@ -19,7 +19,7 @@ export class RoomService {
       name: result,
       open: true,
       usuarios: [user]
-    }).then((res) => console.log(res))
+    }).then((res) => console.log("res"))
     return "/room/" + result;
 
   }
@@ -28,7 +28,7 @@ export class RoomService {
     return RoomModel.find();
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return RoomModel.find({
       name: id
     });
@@ -42,28 +42,30 @@ export class RoomService {
     return `This action removes a #${id} room`;
   }
 
-  async joinRoom(idUser: string, name: string) {
-    let user: any = await UsuariosModel.find({ name: idUser })
-
-    if (!user)
-      user = await UsuariosModel.create({ name: idUser })
-
+  async joinRoom(idUser: string, name: string, socketId: string) {
+    let user: any = await RoomModel.find({'usuarios.name':idUser})
+    if(user.length<1){
+    user = [{name:idUser,card:0, socketId:socketId}]
     let res = await RoomModel.findOneAndUpdate({ name: name }, { $addToSet: { usuarios: user } }).exec()
-    return res
+    res['usuarios'] = res['usuarios'].concat(user)
+    return [res]
+    }
+    return user
+  
   }
 
-  leaveRoom(user: Usuarios, room: Room) {
-    let res = RoomModel.updateOne(room, { $unset: { usuarios: user } }).exec()
-      .then((res) => {
-        if (res.modifiedCount > 0)
-          return true
-        return false
-      })
+  async leaveRoom(user: Usuarios, room: Room) {
+    let res = await RoomModel.findOneAndUpdate({name:room.name}, { $pull: { usuarios: user } }).exec()
+    res.usuarios = res.usuarios.filter((item)=>{
+      if(user.name != item.name)
+      return item
+    })  
 
-    return res
+
+    return [res]
   }
 
-  playCard(user: Usuarios, room: Room) {
+  async playCard(user: Usuarios, room: Room) {
     const query = {
       name: room.name,
       "usuarios.name": user.name
@@ -71,14 +73,12 @@ export class RoomService {
     const updateDoc = {
       $set: { 'usuarios.$.card': user.card }
     }
-    let res = RoomModel.updateOne(query, updateDoc).exec()
-      .then((res) => {
-        console.log(res)
-        if (res.modifiedCount > 0)
-          return true
-        return false
-      })
-
-    return res
+    let res = await RoomModel.findOneAndUpdate(query, updateDoc).exec()
+    res.usuarios = res.usuarios.filter((item)=>{
+      if(item.name == user.name)
+        item.card = user.card
+      return item
+    })
+    return [res]
   }
 }
